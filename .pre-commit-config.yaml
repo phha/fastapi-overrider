@@ -32,7 +32,7 @@ repos:
         require_serial: true
       - id: pytest
         name: pytest
-        stages: [push]
+        stages: [commit]
         language: system
         entry: poetry run pytest
         types: [python]
