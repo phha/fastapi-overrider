@@ -1,4 +1,5 @@
 import inspect
+
 from collections import UserDict
 from functools import wraps
 from typing import Any, Callable, ParamSpec, TypeVar

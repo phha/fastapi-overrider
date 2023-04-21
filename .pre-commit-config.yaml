@@ -1,0 +1,39 @@
+---
+# See https://pre-commit.com/ for usage and config
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.4.0
+    hooks:
+      - id: check-yaml
+      - id: check-toml
+  - repo: local
+    hooks:
+      - id: isort
+        name: isort
+        stages: [commit]
+        language: system
+        entry: poetry run isort
+        types_or: [cython, pyi, python]
+        args: [--filter-files]
+        require_serial: true
+      - id: black
+        name: black
+        stages: [commit]
+        language: system
+        entry: poetry run black
+        types_or: [python, pyi]
+        require_serial: true
+      - id: flake8
+        name: flake8
+        stages: [commit]
+        language: system
+        entry: poetry run pflake8
+        types: [python]
+        require_serial: true
+      - id: pytest
+        name: pytest
+        stages: [push]
+        language: system
+        entry: poetry run pytest
+        types: [python]
+        pass_filenames: false
