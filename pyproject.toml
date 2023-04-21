@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fastapi-overrider"
-version = "0.1.1"
+version = "0.2.0"
 description = "FastAPI Dependency overrides made easy."
 authors = ["Philipp Hack <philipp.hack@gmail.com>"]
 license = "MIT"
@@ -15,7 +15,7 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.10"
 fastapi = "^0.95.1"
 
 
