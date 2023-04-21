@@ -2,11 +2,11 @@ import inspect
 
 from collections import UserDict
 from functools import wraps
-from typing import Any, Callable, ParamSpec, TypeVar
+from typing import Any, Callable, TypeVar
 from unittest.mock import MagicMock, create_autospec
 
 from fastapi import FastAPI
-from typing_extensions import Self
+from typing_extensions import ParamSpec, Self
 
 _T = TypeVar("_T")
 _P = ParamSpec("_P")
