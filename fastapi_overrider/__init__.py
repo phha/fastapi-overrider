@@ -40,9 +40,9 @@ class Overrider(UserDict):
         return override
 
     def mock(self, key: _DepType, strict=True) -> MagicMock:
-        """Override a dependnecy with a function returning a mock value.
-        Returns the mock value"""
-        name = f"mock value for {key}"
+        """Override a dependnecy with a mock.
+        Returns the mock"""
+        name = f"mock for {key}"
         return_type = inspect.get_annotations(key)["return"]
         return_value = (
             create_autospec(
