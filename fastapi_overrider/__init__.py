@@ -97,6 +97,13 @@ class Overrider(UserDict):
         )
         return self[key]
 
+    def spy(self, key: _DepType) -> MagicMock:
+        """Replace a dependency with a spy wrapper.
+        Returns the spy"""
+        spy_name = f"Spy for {key.__name__}"
+        self[key] = MagicMock(wraps=key, spec_set=True, unsafe=False, name=spy_name)
+        return self[key]
+
     def __enter__(self: Self) -> Self:
         self._restore_overrides = self._app.dependency_overrides
         self._app.dependency_overrides = self._restore_overrides.copy()

@@ -103,6 +103,51 @@ def test_get_item(client: TestClient, override: Overrider):
     assert response.text == "Foo"
 ```
 
+You can call Overrider directly and it will guess what you want to do:
+
+```python
+def test_get_item_from_function(client: TestClient, override: Overrider):
+    def override_retrieve_item(id: int):
+        return f"{id}: Foo"
+    override(dependencies.retrieve_item, override_retrieve_item)
+
+    response = client.get("/item/0")
+
+    assert response.text == "0: Foo"
+```
+
+```python
+def test_get_item_from_value(client: TestClient, override: Overrider):
+    override(dependencies.retrieve_item, "0: Foo")
+
+    response = client.get("/item/0")
+
+    assert response.text == "0: Foo"
+```
+
+```python
+def test_get_item_from_mock(client: TestClient, override: Overrider):
+    mock_retriever = override(dependencies.retrieve_item)
+    mock_retriever.return_value = "Foo"
+
+    response = client.get("/item/0")
+
+    mock_retriever.assert_called_with(0)
+    assert response.text == "0: Foo"
+```
+
+Spy on a dependency. The original dependency will still be called:
+
+```python
+def test_get_item_from_mock(client: TestClient, override: Overrider):
+    spy = override.spy(dependencies.retrieve_item)
+
+    response = client.get("/item/0")
+
+    spy.assert_called_with(0)
+    assert response.text == "0: Foo"
+```
+
 Reuse common overrides:
 
 ```python
@@ -139,37 +184,4 @@ def test_get_greeting(client: TestClient, override: Overrider):
     response = client.get("/open/pod_bay_doors")
 
     assert response.text == "I'm afraid I can't let you do that, Dave."
-```
-
-You can call Overrider directly and it will guess what you want to do:
-
-```python
-def test_get_item_from_function(client: TestClient, override: Overrider):
-    def override_retrieve_item(id: int):
-        return f"{id}: Foo"
-    override(dependencies.retrieve_item, override_retrieve_item)
-
-    response = client.get("/item/0")
-
-    assert response.text == "0: Foo"
-```
-
-```python
-def test_get_item_from_value(client: TestClient, override: Overrider):
-    override(dependencies.retrieve_item, "0: Foo")
-
-    response = client.get("/item/0")
-
-    assert response.text == "0: Foo"
-```
-
-```python
-def test_get_item_from_mock(client: TestClient, override: Overrider):
-    mock_retriever = override(dependencies.retrieve_item)
-    mock_retriever.return_value = "Foo"
-
-    response = client.get("/item/0")
-
-    mock_retriever.assert_called_with(0)
-    assert response.text == "0: Foo"
 ```

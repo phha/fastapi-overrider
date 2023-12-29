@@ -140,6 +140,15 @@ def test_function_call(
     assert mock == get_bar
 
 
+def test_spy(app: FastAPI, overrider: Overrider, get_foo: DepType) -> None:
+    # when
+    spy = overrider.spy(get_foo)
+
+    # then
+    assert app.dependency_overrides[get_foo]() == "Foo"
+    spy.assert_called_once()
+
+
 @pytest.fixture()
 def app() -> FastAPI:
     return FastAPI()
