@@ -2,7 +2,7 @@ import inspect
 from collections import UserDict
 from collections.abc import Callable
 from functools import wraps
-from typing import ParamSpec, Self, TypeVar
+from typing import ParamSpec, Self, TypeVar, overload
 from unittest.mock import MagicMock, create_autospec
 
 from fastapi import FastAPI
@@ -23,6 +23,40 @@ class Overrider(UserDict):
     ) -> None:
         self._app = app
 
+    @overload
+    def __call__(self, key: _DepType, override: _DepType) -> _DepType:
+        """Override a dependency with the given function.
+        Returns the function"""
+        ...
+
+    @overload
+    def __call__(self, key: _DepType, override: _T) -> _T:
+        """Override a dependeny with a function returning the given value.
+        Returns the value"""
+        ...
+
+    @overload
+    def __call__(self, key: _DepType, *, strict: bool = True) -> MagicMock:
+        """Override a dependnecy with a mock value.
+        Returns the mock value"""
+        ...
+
+    def __call__(self, *args, **kwargs) -> _DepType | MagicMock | object:
+        """Override a dependency either with a function, a value or a mock."""
+        match args:
+            case [key] if isinstance(key, Callable) and (
+                list(kwargs.keys()) == ["strict"] or len(kwargs) == 0
+            ):
+                return self.mock(key, strict=kwargs.get("strict", True))
+            case [key, override] if isinstance(key, Callable) and isinstance(
+                override, Callable
+            ):
+                return self.function(key, override)
+            case [key, override] if isinstance(key, Callable):
+                return self.value(key, override)
+            case _:
+                raise NotImplementedError
+
     def function(self, key: _DepType, override: _DepType) -> _DepType:
         """Override a dependency with the given function.
         Returns the function"""
@@ -40,18 +74,28 @@ class Overrider(UserDict):
         return override
 
     def mock(self, key: _DepType, *, strict: bool = True) -> MagicMock:
-        """Override a dependnecy with a mock.
-        Returns the mock"""
-        name = f"mock for {key}"
+        """Override a dependnecy with a mock value.
+        Returns a mock function that returns a mock value"""
+        value_name = f"mock value for {key.__name__}"
+        function_name = f"mock function for {key.__name__}"
         return_type = inspect.get_annotations(key)["return"]
         return_value = (
             create_autospec(
-                return_type, instance=True, spec_set=True, unsafe=False, name=name
+                return_type, instance=True, spec_set=True, unsafe=False, name=value_name
             )
             if strict
-            else (MagicMock(name=name))
+            else (MagicMock(name=value_name))
         )
-        return self.value(key, return_value)
+
+        def wrapper(*args: _P.args, **kwargs: _P.kwargs) -> MagicMock:  # noqa: ARG001
+            return return_value
+
+        self[key] = (
+            MagicMock(wraps=wrapper, spec_set=True, unsafe=False, name=function_name)
+            if strict
+            else MagicMock(wraps=wrapper, name=function_name)
+        )
+        return self[key]
 
     def __enter__(self: Self) -> Self:
         self._restore_overrides = self._app.dependency_overrides
