@@ -1,12 +1,11 @@
 import inspect
-
 from collections import UserDict
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable, ParamSpec, TypeVar
+from typing import ParamSpec, Self, TypeVar
 from unittest.mock import MagicMock, create_autospec
 
 from fastapi import FastAPI
-from typing_extensions import Self
 
 _T = TypeVar("_T")
 _P = ParamSpec("_P")
@@ -34,13 +33,13 @@ class Overrider(UserDict):
         """Override a dependeny with a function returning the given value.
         Returns the value"""
 
-        def wrapper(*args: _P.args, **kwargs: _P.kwargs) -> _T:
+        def wrapper(*args: _P.args, **kwargs: _P.kwargs) -> _T:  # noqa: ARG001
             return override
 
         self[key] = wraps(key)(wrapper)
         return override
 
-    def mock(self, key: _DepType, strict=True) -> MagicMock:
+    def mock(self, key: _DepType, *, strict: bool = True) -> MagicMock:
         """Override a dependnecy with a mock.
         Returns the mock"""
         name = f"mock for {key}"
@@ -60,5 +59,5 @@ class Overrider(UserDict):
         self.data = self._app.dependency_overrides
         return self
 
-    def __exit__(self, *_: Any) -> None:
+    def __exit__(self, *_: object) -> None:
         self._app.dependency_overrides = self._restore_overrides

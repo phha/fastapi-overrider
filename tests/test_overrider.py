@@ -1,8 +1,8 @@
-from typing import Callable, Generator
+from collections.abc import Callable, Generator
 
 import pytest
-
 from fastapi import FastAPI
+
 from fastapi_overrider import Overrider
 
 DepType = Callable[[], str]
@@ -82,18 +82,18 @@ def test_mock_not_strict(overrider: Overrider, get_foo: DepType) -> None:
     assert mock.bar == 0
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture()
 def app() -> FastAPI:
     return FastAPI()
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture()
 def overrider(app: FastAPI) -> Generator[Overrider, None, None]:
     with Overrider(app) as overrider:
         yield overrider
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture()
 def get_foo() -> DepType:
     def inner_get_foo() -> str:
         return "Foo"
@@ -101,7 +101,7 @@ def get_foo() -> DepType:
     return inner_get_foo
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture()
 def get_bar() -> DepType:
     def inner_get_bar() -> str:
         return "Bar"

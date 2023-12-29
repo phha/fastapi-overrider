@@ -1,6 +1,18 @@
 ---
 # See https://pre-commit.com/ for usage and config
 repos:
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.0.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        args: []
+  - repo: https://github.com/python-poetry/poetry
+    rev: 1.7.1
+    hooks:
+      - id: poetry-check
+      - id: poetry-lock
+      - id: poetry-install
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v3.4.0
     hooks:
@@ -8,32 +20,26 @@ repos:
       - id: check-toml
   - repo: local
     hooks:
-      - id: isort
-        name: isort
+      - id: ruff_check
+        name: Ruff Check
         stages: [commit]
         language: system
-        entry: poetry run isort
-        types_or: [cython, pyi, python]
-        args: [--filter-files]
-        require_serial: true
-      - id: black
-        name: black
-        stages: [commit]
-        language: system
-        entry: poetry run black
-        types_or: [python, pyi]
-        require_serial: true
-      - id: flake8
-        name: flake8
-        stages: [commit]
-        language: system
-        entry: poetry run pflake8
+        entry: poetry run ruff check
         types: [python]
-        require_serial: true
+        args: [--fix]
+        require_serial: false
+      - id: ruff_format
+        name: Ruff Format
+        stages: [commit]
+        language: system
+        entry: poetry run ruff format
+        types: [python]
+        require_serial: false
       - id: pytest
         name: pytest
-        stages: [commit]
+        stages: [push]
         language: system
         entry: poetry run pytest
         types: [python]
         pass_filenames: false
+

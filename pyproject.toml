@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fastapi-overrider"
-version = "0.2.0"
+version = "0.3.0"
 description = "FastAPI Dependency overrides made easy."
 authors = ["Philipp Hack <philipp.hack@gmail.com>"]
 license = "MIT"
@@ -25,31 +25,17 @@ pre-commit = "^2.21.0"
 isort = "^5.10.1"
 pyproject-flake8 = "^4.0.1"
 black = "^23.3.0"
+ruff = "^0.1.9"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
-[tool.black]
-line-length = 88
-target-version = ['py310']
+[tool.ruff]
+select = ["ALL"]
+ignore = ["D", "ANN101", "TRY003", "COM812", "ISC001"]
+target-version = "py312"
+fixable = ["ALL"]
 
-[tool.isort]
-profile = 'black'
-src_paths = ["knower", "tests"]
-line_length = 88
-include_trailing_comma = true
-balanced_wrapping = true
-force_single_line = false
-multi_line_output = 3
-lines_between_types = 1
-
-[tool.flake8]
-count = "false"
-extend-exclude = 'docs'
-extend-ignore = "E203,S101,SIM106"
-max-line-length = 88
-show-source = "false"
-statistics = "false"
-inline-quotes = '"'
-accept-encodings = 'utf-8'
+[tool.ruff.per-file-ignores]
+"tests/*" = ["S101"]
