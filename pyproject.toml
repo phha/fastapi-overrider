@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fastapi-overrider"
-version = "0.5.0"
+version = "0.6.0"
 description = "FastAPI Dependency overrides made easy."
 authors = ["Philipp Hack <philipp.hack@gmail.com>"]
 license = "MIT"
@@ -17,15 +17,19 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.10"
 fastapi = "^0.95.1"
+pytest = "^7.3.1"
 
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^7.3.1"
 pre-commit = "^2.21.0"
 isort = "^5.10.1"
 pyproject-flake8 = "^4.0.1"
 black = "^23.3.0"
 ruff = "^0.1.9"
+
+
+[tool.poetry.group.test.dependencies]
+httpx = "^0.26.0"
 
 [build-system]
 requires = ["poetry-core"]

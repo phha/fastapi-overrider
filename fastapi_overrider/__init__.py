@@ -1,11 +1,13 @@
+import asyncio
 import inspect
 from collections import UserDict
 from collections.abc import Callable
 from functools import wraps
-from typing import ParamSpec, Self, TypeVar, overload
-from unittest.mock import MagicMock, create_autospec
+from typing import Any, ParamSpec, Self, TypeVar, overload
+from unittest.mock import MagicMock, create_autospec, seal
 
 from fastapi import FastAPI
+from fastapi.dependencies.utils import is_coroutine_callable
 
 _T = TypeVar("_T")
 _P = ParamSpec("_P")
@@ -36,7 +38,7 @@ class Overrider(UserDict):
         ...
 
     @overload
-    def __call__(self, key: _DepType, *, strict: bool = True) -> MagicMock:
+    def __call__(self, key: _DepType) -> MagicMock:
         """Override a dependnecy with a mock value.
         Returns the mock value"""
         ...
@@ -47,7 +49,7 @@ class Overrider(UserDict):
             case [key] if isinstance(key, Callable) and (
                 list(kwargs.keys()) == ["strict"] or len(kwargs) == 0
             ):
-                return self.mock(key, strict=kwargs.get("strict", True))
+                return self.mock(key)
             case [key, override] if isinstance(key, Callable) and isinstance(
                 override, Callable
             ):
@@ -73,36 +75,42 @@ class Overrider(UserDict):
         self[key] = wraps(key)(wrapper)
         return override
 
-    def mock(self, key: _DepType, *, strict: bool = True) -> MagicMock:
+    def mock(self, key: _DepType) -> MagicMock:
         """Override a dependnecy with a mock value.
         Returns a mock function that returns a mock value"""
         value_name = f"mock value for {key.__name__}"
         function_name = f"mock function for {key.__name__}"
         return_type = inspect.get_annotations(key)["return"]
-        return_value = (
-            create_autospec(
-                return_type, instance=True, spec_set=True, unsafe=False, name=value_name
-            )
-            if strict
-            else (MagicMock(name=value_name))
+        return_value = create_autospec(
+            return_type,
+            instance=True,
+            unsafe=False,
+            name=value_name,
         )
 
-        def wrapper(*args: _P.args, **kwargs: _P.kwargs) -> MagicMock:  # noqa: ARG001
-            return return_value
-
-        self[key] = (
-            MagicMock(wraps=wrapper, spec_set=True, unsafe=False, name=function_name)
-            if strict
-            else MagicMock(wraps=wrapper, name=function_name)
-        )
-        return self[key]
+        mock_func = MagicMock(unsafe=False, name=function_name)
+        mock_func.__signature__ = inspect.signature(key)
+        mock_func.return_value = return_value
+        seal(mock_func)
+        self[key] = mock_func
+        return mock_func
 
     def spy(self, key: _DepType) -> MagicMock:
         """Replace a dependency with a spy wrapper.
         Returns the spy"""
         spy_name = f"Spy for {key.__name__}"
-        self[key] = MagicMock(wraps=key, spec_set=True, unsafe=False, name=spy_name)
-        return self[key]
+
+        def wrapper(*args, **kwargs) -> Any:  # noqa: ANN002,ANN003,ANN401
+            if is_coroutine_callable(key):
+                return asyncio.run(key(*args, **kwargs))
+            return key(*args, **kwargs)
+
+        spy = MagicMock(wraps=key, unsafe=False, name=spy_name)
+        spy.__signature__ = inspect.signature(key)
+        spy.side_effect = wrapper
+        seal(spy)
+        self[key] = spy
+        return spy
 
     def __enter__(self: Self) -> Self:
         self._restore_overrides = self._app.dependency_overrides
