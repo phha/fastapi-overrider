@@ -166,15 +166,13 @@ Reuse common overrides. They are composable, you can have multiple:
 @pytest.fixture()
 def as_dave(app: FastAPI) -> Iterator[Overrider]:
     with Overrider(app) as override:
-        mock_user = override(get_user)
-        mock_user.return_value.name = "Dave"
+        override(get_user, User(name="Dave", authenticated=True))
         yield override
 
 @pytest.fixture()
 def in_the_morning(app: FastAPI) -> Iterator[Overrider]:
     with Overrider(app) as override:
-        mock_time_of_day = override(get_time_of_day)
-        mock_time_of_day.return_value = "morning"
+        override(get_time_of_day, "morning")
         yield override
 
 def test_get_greeting(client: TestClient, as_dave: Overrider, in_the_morning: Overrider) -> None:
@@ -188,9 +186,7 @@ Extend it with your own convenience methods:
 ```python
 class MyOverrider(Overrider):
     def user(self, *, name: str, authenticated: bool = False) -> None:
-        mock_user = self(get_user)
-        mock_user.return_value.name = name
-        mock_user.return_value.authenticated = authenticated
+        self(get_user, User(name=name, authenticated=authenticated))
 
 @pytest.fixture()
 def override(app: FastAPI):

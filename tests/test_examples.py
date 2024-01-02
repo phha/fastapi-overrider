@@ -18,13 +18,6 @@ items = {
 }
 
 
-class MyOverrider(Overrider):
-    def user(self, *, name: str, authenticated: bool = False) -> None:
-        mock_user = self(get_user)
-        mock_user.return_value.name = name
-        mock_user.return_value.authenticated = authenticated
-
-
 class Item(BaseModel):
     item_id: int
     name: str
@@ -32,7 +25,12 @@ class Item(BaseModel):
 
 class User(BaseModel):
     name: str
-    authenticated = False
+    authenticated: bool = False
+
+
+class MyOverrider(Overrider):
+    def user(self, *, name: str, authenticated: bool = False) -> None:
+        self(get_user, User(name=name, authenticated=authenticated))
 
 
 async def lookup_item(item_id: int) -> Item:
@@ -165,6 +163,7 @@ def test_get_greeting(
     assert response.text == '"Good morning, Dave."'
 
 
+# Eleventh example: convenience methods
 def test_open_pod_bay_doors(client: TestClient, my_override: MyOverrider) -> None:
     my_override.user(name="Dave", authenticated=False)
 
@@ -211,16 +210,14 @@ def app() -> FastAPI:
 @pytest.fixture()
 def as_dave(app: FastAPI) -> Iterator[Overrider]:
     with Overrider(app) as override:
-        mock_user = override(get_user)
-        mock_user.return_value.name = "Dave"
+        override(get_user, User(name="Dave", authenticated=True))
         yield override
 
 
 @pytest.fixture()
 def in_the_morning(app: FastAPI) -> Iterator[Overrider]:
     with Overrider(app) as override:
-        mock_time_of_day = override(get_time_of_day)
-        mock_time_of_day.return_value = "morning"
+        override(get_time_of_day, "morning")
         yield override
 
 
