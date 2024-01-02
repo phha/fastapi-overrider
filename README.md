@@ -20,6 +20,8 @@ and extendable.
 
 ## Usage
 
+### General usage
+
 Use it as pytest fixture to ensure every test is run with a clean set of overrides:
 
 ```python
@@ -58,6 +60,8 @@ as an override.
 
 It doesn't matter if your dependency is async or not. Overrider will do the right thing.
 
+### Basic overrides
+
 `override.value()` returns the override value:
 
 ```python
@@ -95,6 +99,8 @@ def test_get_item_drop_in(client: TestClient, override: Overrider) -> None:
     assert Item(**response) == item
 ```
 
+### Mocks and spies
+
 Overrider can create mocks for you:
 
 ```python
@@ -120,6 +126,54 @@ def test_get_item_spy(client: TestClient, override: Overrider) -> None:
 
     spy.assert_called_with(item_id=0)
 ```
+
+### Auto-generated overrides
+
+Overrider can auto-generate mock objects using [Polyfactory](https://polyfactory.litestar.dev/).
+
+To enable this extra feature, use `pip install fastapi-overrider[polyfactory]`.
+
+Overrider will automatically use a
+[matching factory](https://polyfactory.litestar.dev/usage/library_factories/index.html)
+for the given dependency.
+
+Generate a single override value. You can provide optional keyword arguments to any of the
+auto-generator methods in order to pin an attribute to a specific value, like `name` in
+this example:
+
+```python
+def test_get_some_item(client: TestClient, override: Overrider) -> None:
+    item = override.some(lookup_item, name="Foo")
+
+    response = client.get(f"/item/{item.item_id}")
+
+    assert item.name == "Foo"
+    assert item == Item(**response.json())
+```
+
+You can also let Overrider generate multiple override values:
+
+```python
+def test_get_five_items(client: TestClient, override: Overrider) -> None:
+    items = override.batch(lookup_item, 5)
+
+    for item in items:
+        response = client.get(f"/item/{item.item_id}")
+        assert item == Item(**response.json())
+```
+
+Attempt to cover the full range of forms that a model can take:
+
+```python
+def test_cover_get_items(client: TestClient, override: Overrider) -> None:
+    items = override.cover(lookup_item)
+
+    for item in items:
+        response = client.get(f"/item/{item.item_id}")
+        assert item == Item(**response.json())
+```
+
+### Shortcuts
 
 You can call Overrider directly and it will guess what you want to do:
 
@@ -159,6 +213,8 @@ def test_get_item_call_mock(client: TestClient, override: Overrider) -> None:
     mock_lookup.assert_called_once_with(item_id=0)
     assert Item(**response.json()) == item
 ```
+
+### Advanced patterns
 
 Reuse common overrides. They are composable, you can have multiple:
 
