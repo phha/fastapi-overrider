@@ -46,7 +46,7 @@ async def get_time_of_day() -> str:
     return "evening"
 
 
-# First example: Override with value
+# example: Override with value
 def test_get_item(client: TestClient, override: Overrider) -> None:
     override_item = Item(item_id=0, name="Bar")
     override.value(lookup_item, override_item)
@@ -56,7 +56,7 @@ def test_get_item(client: TestClient, override: Overrider) -> None:
     assert Item(**response) == override_item
 
 
-# Second example: use as context manager
+# example: use as context manager
 def test_get_item_context_manager(client: TestClient, app: FastAPI) -> None:
     with Overrider(app) as override:
         override_item = Item(item_id=0, name="Bar")
@@ -67,7 +67,7 @@ def test_get_item_context_manager(client: TestClient, app: FastAPI) -> None:
         assert Item(**response) == override_item
 
 
-# Third example: `override.value()` returns the override value
+# example: `override.value()` returns the override value
 def test_get_item_return_value(client: TestClient, override: Overrider) -> None:
     item = override.value(lookup_item, Item(item_id=0, name="Bar"))
 
@@ -76,7 +76,7 @@ def test_get_item_return_value(client: TestClient, override: Overrider) -> None:
     assert Item(**response) == item
 
 
-# Fourth example: override with a callable
+# example: override with a callable
 def test_get_item_function(client: TestClient, override: Overrider) -> None:
     item = Item(item_id=0, name="Bar")
     override.function(lookup_item, lambda item_id: item)  # noqa: ARG005
@@ -86,7 +86,7 @@ def test_get_item_function(client: TestClient, override: Overrider) -> None:
     assert Item(**response) == item
 
 
-# Fifth example: drop-in replacement
+# example: drop-in replacement
 def test_get_item_drop_in(client: TestClient, override: Overrider) -> None:
     item = Item(item_id=0, name="Bar")
 
@@ -100,7 +100,7 @@ def test_get_item_drop_in(client: TestClient, override: Overrider) -> None:
     assert Item(**response) == item
 
 
-# Sixth example: override with mock
+# example: override with mock
 def test_get_item_mock(client: TestClient, override: Overrider) -> None:
     item = Item(item_id=0, name="Bar")
     mock_lookup = override.mock(lookup_item)
@@ -112,7 +112,7 @@ def test_get_item_mock(client: TestClient, override: Overrider) -> None:
     assert Item(**response.json()) == item
 
 
-# seventh example: spy on a dependency
+# example: spy on a dependency
 def test_get_item_spy(client: TestClient, override: Overrider) -> None:
     spy = override.spy(lookup_item)
 
@@ -121,7 +121,7 @@ def test_get_item_spy(client: TestClient, override: Overrider) -> None:
     spy.assert_called_with(item_id=0)
 
 
-# Eigth example: directly set a callable
+# example: directly set a callable
 def test_get_item_call_callable(client: TestClient, override: Overrider) -> None:
     item = Item(item_id=0, name="Bar")
     override(lookup_item, lambda item_id: item)  # noqa: ARG005
@@ -131,7 +131,7 @@ def test_get_item_call_callable(client: TestClient, override: Overrider) -> None
     assert Item(**response) == item
 
 
-# Ninth example: directly set a value
+# example: directly set a value
 def test_get_item_call_value(client: TestClient, override: Overrider) -> None:
     item = override(lookup_item, Item(item_id=0, name="Bar"))
 
@@ -140,7 +140,7 @@ def test_get_item_call_value(client: TestClient, override: Overrider) -> None:
     assert Item(**response) == item
 
 
-# Tenth example: directly create a mock
+# example: directly create a mock
 def test_get_item_call_mock(client: TestClient, override: Overrider) -> None:
     item = Item(item_id=0, name="Bar")
     mock_lookup = override(lookup_item)
@@ -152,7 +152,7 @@ def test_get_item_call_mock(client: TestClient, override: Overrider) -> None:
     assert Item(**response.json()) == item
 
 
-# Tenth example: reusable overrides
+# example: reusable overrides
 def test_get_greeting(
     client: TestClient,
     as_dave: Overrider,  # noqa: ARG001
@@ -163,13 +163,39 @@ def test_get_greeting(
     assert response.text == '"Good morning, Dave."'
 
 
-# Eleventh example: convenience methods
+# example: convenience methods
 def test_open_pod_bay_doors(client: TestClient, my_override: MyOverrider) -> None:
     my_override.user(name="Dave", authenticated=False)
 
     response = client.get("/open/pod_bay_doors")
 
     assert response.text == "\"I'm afraid I can't let you do that, Dave.\""
+
+
+# example polyfactory
+def test_get_some_item(client: TestClient, override: Overrider) -> None:
+    item = override.some(lookup_item, name="Foo")
+
+    response = client.get(f"/item/{item.item_id}")
+
+    assert item.name == "Foo"
+    assert item == Item(**response.json())
+
+
+def test_get_five_items(client: TestClient, override: Overrider) -> None:
+    items = override.batch(lookup_item, 5)
+
+    for item in items:
+        response = client.get(f"/item/{item.item_id}")
+        assert item == Item(**response.json())
+
+
+def test_cover_get_items(client: TestClient, override: Overrider) -> None:
+    items = override.cover(lookup_item)
+
+    for item in items:
+        response = client.get(f"/item/{item.item_id}")
+        assert item == Item(**response.json())
 
 
 @pytest.fixture()
