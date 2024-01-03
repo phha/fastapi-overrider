@@ -10,7 +10,8 @@ Easy and safe dependency overrides for your [FastAPI](https://fastapi.tiangolo.c
 
 FastAPI provided a nice mechanism to override dependencies, but there are a few gotchas:
 
-- Overrides are not cleaned up automatically after a test run
+- Overrides are not cleaned up automatically and can't be scoped easily.
+- Lots of boilerplate code required when you just want /some/ test data.
 - Using `unittest.mock.Mock` is non-trivial due to the way FastAPI relies on inspection
   of signatures when calling dependencies.
 - Likewise, mocking async dependencies is cumbersome.
@@ -22,13 +23,10 @@ and extendable.
 
 ### General usage
 
-Use it as pytest fixture to ensure every test is run with a clean set of overrides:
+Use it as pytest fixture to ensure every test is run with a clean set of overrides.
 
 ```python
-@pytest.fixture()
-def override(app: FastAPI) -> Iterator[Overrider]:
-    with Overrider(app) as override:
-        yield override
+override = create_fixture(app)
 
 def test_get_item_from_value(client: TestClient, override: Overrider) -> None:
     override_item = Item(item_id=0, name="Bar")
