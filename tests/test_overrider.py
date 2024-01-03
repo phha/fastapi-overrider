@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 import pytest
 from fastapi import FastAPI
 
-from fastapi_overrider import Overrider
+from fastapi_overrider import Overrider, register_fixture
 
 DepType = Callable[[], str]
 
@@ -106,6 +106,38 @@ def test_spy(app: FastAPI, overrider: Overrider, get_foo: DepType) -> None:
     # then
     assert app.dependency_overrides[get_foo]() == "Foo"
     spy.assert_called_once()
+
+
+def test_call_raises_notimplemented(overrider: Overrider) -> None:
+    with pytest.raises(NotImplementedError):
+        # when
+        overrider(1, 2, 3)
+
+        # then raise NotImplementedError
+
+
+implicit_overrider = register_fixture(name="implicit_overrider")
+
+
+def test_fixture_implicit_app(implicit_overrider: Overrider) -> None:
+    def get() -> str:
+        return "foo"
+
+    value = implicit_overrider(get, "bar")
+
+    assert value == "bar"
+
+
+explicit_overrider = register_fixture(FastAPI(), name="explicit_overrider")
+
+
+def test_fixture_explicit_app(explicit_overrider: Overrider) -> None:
+    def get() -> str:
+        return "foo"
+
+    value = explicit_overrider(get, "bar")
+
+    assert value == "bar"
 
 
 @pytest.fixture()
