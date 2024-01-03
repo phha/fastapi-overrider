@@ -155,6 +155,21 @@ def test_attrs(override: Overrider) -> None:
     assert "name" in asdict(item)
 
 
+def test_unsupported(override: Overrider) -> None:
+    # given
+    class Item:
+        pass
+
+    def get() -> Item:
+        ...
+
+    with pytest.raises(ValueError, match=r"Did not find a factory for type.*"):
+        # when
+        override.some(get)
+
+        # then raise ValueError
+
+
 @pytest.fixture()
 def override() -> Iterator[Overrider]:
     app = FastAPI()
