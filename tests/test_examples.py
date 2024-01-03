@@ -6,7 +6,7 @@ from fastapi import Depends, FastAPI
 from fastapi.testclient import TestClient
 from pydantic import BaseModel
 
-from fastapi_overrider import Overrider
+from fastapi_overrider import Overrider, register_fixture
 
 items = {
     0: {
@@ -204,12 +204,6 @@ def client(app: FastAPI) -> TestClient:
 
 
 @pytest.fixture()
-def override(app: FastAPI) -> Iterator[Overrider]:
-    with Overrider(app) as override:
-        yield override
-
-
-@pytest.fixture()
 def app() -> FastAPI:
     app = FastAPI()
 
@@ -231,6 +225,9 @@ def app() -> FastAPI:
         return f"I'm afraid I can't let you do that, {user.name}."
 
     return app
+
+
+override = register_fixture()
 
 
 @pytest.fixture()

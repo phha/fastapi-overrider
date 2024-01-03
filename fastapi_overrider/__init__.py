@@ -4,9 +4,10 @@ from collections import UserDict
 from collections.abc import Awaitable, Callable, Iterator
 from contextlib import suppress
 from functools import wraps
-from typing import Any, ParamSpec, Self, TypeVar, overload
+from typing import Any, Literal, ParamSpec, Self, TypeVar, overload
 from unittest.mock import MagicMock, create_autospec, seal
 
+import pytest
 from fastapi import FastAPI
 from fastapi.dependencies.utils import is_coroutine_callable
 
@@ -207,3 +208,33 @@ class Overrider(UserDict):
 
     def __exit__(self, *_: object) -> None:
         self._app.dependency_overrides = self._restore_overrides
+
+
+Scope = (
+    Literal["session", "package", "module", "class", "function"]
+    | Callable[
+        [str, pytest.Config],
+        Literal["session", "package", "module", "class", "function"],
+    ]
+)
+
+
+def register_fixture(
+    app: FastAPI | None = None,
+    *,
+    name: str = "override",
+    autouse: bool = False,
+    scope: Scope = "function",
+) -> Callable[[], Iterator[Overrider]]:
+    if app:
+
+        def inner() -> Iterator[Overrider]:
+            with Overrider(app) as overrider:
+                yield overrider
+    else:
+
+        def inner(app: FastAPI) -> Iterator[Overrider]:
+            with Overrider(app) as overrider:
+                yield overrider
+
+    return pytest.fixture(name=name, autouse=autouse, scope=scope)(inner)
