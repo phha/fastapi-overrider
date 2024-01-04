@@ -127,12 +127,12 @@ def test_get_item_spy(client: TestClient, override: Overrider) -> None:
 
 ### Auto-generated overrides
 
-Overrider can auto-generate mock objects using [Polyfactory](https://polyfactory.litestar.dev/).
+Overrider can auto-generate mock objects using [Unifactory](https://github.com/phha/unifactory).
 
-To enable this extra feature, use `pip install fastapi-overrider[polyfactory]`.
+To enable this extra feature, use `pip install fastapi-overrider[unifactory]`.
 
-Overrider will automatically use a
-[matching factory](https://polyfactory.litestar.dev/usage/library_factories/index.html)
+Overrider will automatically use a matching factory from
+[Polyfactory's inventory](https://polyfactory.litestar.dev/usage/library_factories/index.html)
 for the given dependency.
 
 Generate a single override value. You can provide optional keyword arguments to any of the

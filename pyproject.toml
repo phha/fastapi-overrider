@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fastapi-overrider"
-version = "0.7.1"
+version = "0.7.2"
 description = "FastAPI Dependency overrides made easy."
 authors = ["Philipp Hack <philipp.hack@gmail.com>"]
 license = "MIT"
@@ -18,7 +18,7 @@ classifiers = [
 python = "^3.10"
 fastapi = ">=0.95.2"
 pytest = "^7.3.1"
-polyfactory = {version = "^2.13.0", optional = true}
+unifactory = {version="^0.1.0", optional = true}
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^2.21.0"
@@ -26,7 +26,7 @@ ruff = "^0.1.9"
 
 [tool.poetry.group.test.dependencies]
 httpx = "^0.26.0"
-polyfactory = "^2.13.0"
+unifactory = "^0.1.0"
 beanie = "^1.24.0"
 mongomock-motor = "^0.0.26"
 odmantic = "^1.0.0"
@@ -35,7 +35,7 @@ sqlalchemy = "^2.0.24"
 attrs = "^23.2.0"
 
 [tool.poetry.extras]
-polyfactory = ["polyfactory"]
+unifactory = ["unifactory"]
 
 [build-system]
 requires = ["poetry-core"]

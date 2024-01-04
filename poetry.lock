@@ -1164,6 +1164,20 @@ files = [
 ]
 
 [[package]]
+name = "unifactory"
+version = "0.1.0"
+description = "Automatically choose the right polyfactory."
+optional = false
+python-versions = ">=3.10,<4.0"
+files = [
+    {file = "unifactory-0.1.0-py3-none-any.whl", hash = "sha256:51db23016684c286df6790614ade56018c634bef485c822e878c74f8229f5891"},
+    {file = "unifactory-0.1.0.tar.gz", hash = "sha256:0bb7b7874fe6368fdc4302d805263a3fa423e046196a71433e4cb9e381380cc6"},
+]
+
+[package.dependencies]
+polyfactory = ">=2.13.0,<3.0.0"
+
+[[package]]
 name = "virtualenv"
 version = "20.25.0"
 description = "Virtual Python Environment builder"
@@ -1184,9 +1198,9 @@ docs = ["furo (>=2023.7.26)", "proselint (>=0.13)", "sphinx (>=7.1.2)", "sphinx-
 test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess (>=1)", "flaky (>=3.7)", "packaging (>=23.1)", "pytest (>=7.4)", "pytest-env (>=0.8.2)", "pytest-freezer (>=0.4.8)", "pytest-mock (>=3.11.1)", "pytest-randomly (>=3.12)", "pytest-timeout (>=2.1)", "setuptools (>=68)", "time-machine (>=2.10)"]
 
 [extras]
-polyfactory = ["polyfactory"]
+unifactory = ["unifactory"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "895bf864ca40a915c5c2406a08d487b46bdb7b683d4a81dc5c9df83ed6420eb7"
+content-hash = "5fe40fbdc6833f4e977ada9077bc988dbaa818f3e5b7c9ea9a3963fe5e8537fb"
